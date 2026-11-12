@@ -34,6 +34,9 @@ eureka:
     prefer-ip-address: true
 
 app:
+  observability:
+    log-bodies: true
+    max-body-length: 2048
   messaging:
     producer-name: charge-fee-service
   fee:
@@ -45,6 +48,12 @@ app:
       # upper limit for the fee. 0 means no limit.
       max-fee: ${FEE_OTHER_MAX:0.00}
 management:
+  tracing:
+    sampling:
+      probability: 1.0
+  otlp:
+      tracing:
+        endpoint: ${OTLP_TRACING_ENDPOINT:http://localhost:4318/v1/traces}
   server:
     port: 18085
   endpoints:
@@ -55,3 +64,21 @@ management:
     distribution:
       percentiles-histogram:
         http.server.requests: true
+        api.calls: true
+        kafka.consume: true
+        client.calls: true
+
+logging:
+  structured:
+    format:
+      file: logstash
+    json:
+      add:
+        service: ${spring.application.name}
+  file:
+    name: ${BANKING_LOG_DIR:${user.home}/banking-logs}/${spring.application.name}.json
+  logback:
+    rollingpolicy:
+      max-file-size: 20MB
+      max-history: 3
+      total-size-cap: 200MB
